@@ -5,7 +5,7 @@
 #  \/  \____/\__/     \____/|_|_|\___|_| |_|\__|
 
 __title__ = "tls_client"
-__description__ = "Advanced Python HTTP Client."
+__description__ = "Advanced Python HTTP Client (fork with binary-response fix and certificate pinning)."
 __version__ = "1.0.2"
-__author__ = "Florian Zager"
+__author__ = "Emanuele Scarlata"
 __license__ = "MIT"
