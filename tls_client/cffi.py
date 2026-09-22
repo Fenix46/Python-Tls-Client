@@ -11,10 +11,10 @@ elif platform in ('win32', 'cygwin'):
 else:
     if machine() == "aarch64":
         file_ext = '-arm64.so'
-    elif "x86" in machine():
-        file_ext = '-x86.so'
-    else:
+    elif machine() in ("x86_64", "amd64", "AMD64"):
         file_ext = '-amd64.so'
+    else:
+        file_ext = '-x86.so'
 
 root_dir = os.path.abspath(os.path.dirname(__file__))
 library = ctypes.cdll.LoadLibrary(f'{root_dir}/dependencies/tls-client{file_ext}')

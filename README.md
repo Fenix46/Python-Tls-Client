@@ -141,6 +141,14 @@ Also I wanted to keep the syntax as similar as possible to [requests](https://gi
 
 # Changelog
 
+## 1.0.3
+- **Fix**: on Linux, 64-bit x86 machines (`platform.machine() == "x86_64"`) were
+  incorrectly matched by the `"x86" in machine()` check in `cffi.py` and loaded
+  the 32-bit `tls-client-x86.so` binary instead of the 64-bit
+  `tls-client-amd64.so`, causing the native library to fail to load on the vast
+  majority of Linux hosts. `machine()` is now matched explicitly against
+  `x86_64`/`amd64`/`AMD64` before falling back to the 32-bit binary.
+
 ## 1.0.2
 - **Fix**: binary response bodies (protobuf, images, ...) were corrupted by a
   UTF-8 `byteReplacer` (U+FFFD) inside the Go C library. Every byte > 127 that
