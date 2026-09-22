@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "python-tls-client"
+dynamic = ["version"]
+description = "Advanced Python HTTP Client with TLS fingerprint spoofing (fork with binary-response fix and certificate pinning)"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Emanuele Scarlata" }
+]
+requires-python = ">=3.8"
+dependencies = [
+    "typing-extensions",
+]
+classifiers = [
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: Unix",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Libraries",
+]
+
+[project.urls]
+Homepage = "https://github.com/Fenix46/Python-Tls-Client"
+Source = "https://github.com/Fenix46/Python-Tls-Client"
+Original = "https://github.com/FlorianREGAZ/Python-Tls-Client"
+
+[tool.setuptools]
+packages = ["tls_client", "tls_client.dependencies"]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = { attr = "tls_client.__version__.__version__" }
+
+[tool.setuptools.package-data]
+"tls_client.dependencies" = ["*"]
