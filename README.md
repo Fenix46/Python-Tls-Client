@@ -1,9 +1,19 @@
 # Python-TLS-Client
+
+> **Nota:** questo è un fork di [Python-Tls-Client](https://github.com/FlorianREGAZ/Python-Tls-Client)
+> di Florian Zager, pubblicato su PyPI con nome diverso (`python-tls-client`) perché
+> il nome originale `tls-client` è già occupato dal progetto upstream.
+> Il modulo importabile resta invariato: `import tls_client`.
+>
+> Modifiche rispetto all'originale:
+> - Fix corruzione risposte binarie (protobuf, immagini, ...) — vedi Changelog 1.0.2
+> - Certificate pinning (vedi Changelog 1.0.1)
+
 Python-TLS-Client is an advanced HTTP library based on requests and tls-client.
 
 # Installation
 ```
-pip install tls-client
+pip install python-tls-client
 ```
 
 # Examples
