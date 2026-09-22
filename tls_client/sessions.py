@@ -397,6 +397,11 @@ class Session:
             "headerOrder": self.header_order,
             "insecureSkipVerify": insecure_skip_verify,
             "isByteRequest": is_byte_request,
+            # Force the Go backend to return the raw response body as a base64
+            # data-URI. Without this flag, binary bytes > 127 get mangled by
+            # UTF-8 transcoding (byteReplacer U+FFFD) inside the C library,
+            # corrupting binary responses (protobuf, images, ...).
+            "isByteResponse": True,
             "additionalDecode": self.additional_decode,
             "proxyUrl": proxy,
             "requestUrl": url,

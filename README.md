@@ -128,3 +128,19 @@ Windows:
 # Acknowledgements
 Big shout out to [Bogdanfinn](https://github.com/bogdanfinn) for open sourcing his [tls-client](https://github.com/bogdanfinn/tls-client) in Golang.
 Also I wanted to keep the syntax as similar as possible to [requests](https://github.com/psf/requests), as most people use it and are familiar with it!
+
+# Changelog
+
+## 1.0.2
+- **Fix**: binary response bodies (protobuf, images, ...) were corrupted by a
+  UTF-8 `byteReplacer` (U+FFFD) inside the Go C library. Every byte > 127 that
+  did not form a valid UTF-8 sequence was replaced by `EF BF BD`.
+  - `sessions.py`: now sends `isByteResponse: True` in the request payload so
+    the backend returns the body as a base64 data-URI.
+  - `response.py`: `build_response` decodes the data-URI back to raw bytes for
+    `Response.content`; `Response.text` is a UTF-8 view (with replacement
+    chars for invalid sequences).
+- Added `tests/test_binary_response.py` (regression suite, needs network).
+
+## 1.0.1
+- Certificate pinning

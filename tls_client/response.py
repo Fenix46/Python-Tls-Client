@@ -2,6 +2,7 @@ from .cookies import cookiejar_from_dict, RequestsCookieJar
 from .structures import CaseInsensitiveDict
 
 from typing import Union
+import base64
 import json
 
 
@@ -53,6 +54,22 @@ class Response:
         return self._content
 
 
+def _split_data_uri(body: str) -> bytes:
+    """Decode a base64 data-URI (data:<mime>;base64,<payload>) to raw bytes.
+
+    The Go backend (isByteResponse) returns the response body as a data-URI to
+    survive the JSON envelope as raw bytes. Anything that is not a data-URI is
+    returned as-is, encoded to bytes.
+    """
+    if isinstance(body, str) and body.startswith("data:"):
+        header, _, b64 = body.partition(",")
+        if ";base64" in header:
+            return base64.b64decode(b64)
+    if isinstance(body, str):
+        return body.encode("utf-8")
+    return body or b""
+
+
 def build_response(res: Union[dict, list], res_cookies: RequestsCookieJar) -> Response:
     """Builds a Response object """
     response = Response()
@@ -71,8 +88,9 @@ def build_response(res: Union[dict, list], res_cookies: RequestsCookieJar) -> Re
     response.headers = response_headers
     # Add cookies
     response.cookies = res_cookies
-    # Add response body
-    response.text = res["body"]
-    # Add response content (bytes)
-    response._content = res["body"].encode()
+    # Add response body (raw bytes, decoded from the base64 data-URI)
+    content = _split_data_uri(res["body"])
+    response._content = content
+    # Add response text (utf-8, replacement chars for invalid sequences)
+    response.text = content.decode("utf-8", errors="replace")
     return response
