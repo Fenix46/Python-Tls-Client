@@ -7,7 +7,7 @@ name = "python-tls-client"
 dynamic = ["version"]
 description = "Advanced Python HTTP Client with TLS fingerprint spoofing (fork with binary-response fix and certificate pinning)"
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
 authors = [
     { name = "Emanuele Scarlata" }
 ]
