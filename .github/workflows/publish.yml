@@ -17,7 +17,11 @@ jobs:
       - name: Verify tag matches package version
         run: |
           TAG_VERSION="${GITHUB_REF_NAME#v}"
-          PKG_VERSION="$(python -c 'from tls_client.__version__ import __version__; print(__version__)')"
+          # Read __version__.py directly instead of importing the tls_client
+          # package: importing pulls in sessions.py -> settings.py, which
+          # needs typing_extensions installed, an unrelated dependency this
+          # version check shouldn't require.
+          PKG_VERSION="$(python -c 'exec(open("tls_client/__version__.py").read()); print(__version__)')"
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
             echo "::error::Release tag '${GITHUB_REF_NAME}' (version '${TAG_VERSION}') does not match tls_client/__version__.py ('${PKG_VERSION}')"
             exit 1
