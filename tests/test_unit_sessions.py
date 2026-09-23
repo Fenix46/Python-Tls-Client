@@ -129,6 +129,58 @@ class TestExecuteRequestSuccess(_PatchedCffiTestCase):
         sent_payload = json.loads(self.mock_request.call_args[0][0].decode("utf-8"))
         self.assertEqual(sent_payload["proxyUrl"], "http://user:pass@127.0.0.1:8080")
 
+    def test_disable_session_tickets_and_http3_default_false(self):
+        self.mock_request.return_value = _fake_native_response()
+
+        self.session.get("https://example.com/")
+
+        sent_payload = json.loads(self.mock_request.call_args[0][0].decode("utf-8"))
+        self.assertFalse(sent_payload["disableSessionTickets"])
+        self.assertFalse(sent_payload["disableHttp3"])
+
+    def test_disable_session_tickets_and_http3_forwarded_when_set(self):
+        self.session.disable_session_tickets = True
+        self.session.disable_http3 = True
+        self.mock_request.return_value = _fake_native_response()
+
+        self.session.get("https://example.com/")
+
+        sent_payload = json.loads(self.mock_request.call_args[0][0].decode("utf-8"))
+        self.assertTrue(sent_payload["disableSessionTickets"])
+        self.assertTrue(sent_payload["disableHttp3"])
+
+    def test_cert_compression_algo_sent_as_list_under_new_field_name(self):
+        custom_session = Session(client_identifier=None, ja3_string="771,...", cert_compression_algo="brotli")
+        custom_session._closed = True
+        self.mock_request.return_value = _fake_native_response()
+
+        custom_session.get("https://example.com/")
+
+        sent_payload = json.loads(self.mock_request.call_args[0][0].decode("utf-8"))
+        self.assertEqual(sent_payload["customTlsClient"]["certCompressionAlgos"], ["brotli"])
+        self.assertNotIn("certCompressionAlgo", sent_payload["customTlsClient"])
+        custom_session.close()
+
+    def test_custom_client_includes_alpn_alps_and_trust_anchors(self):
+        custom_session = Session(
+            client_identifier=None,
+            ja3_string="771,...",
+            alpn_protocols=["h2", "http/1.1"],
+            alps_protocols=["h2"],
+            trust_anchors_payload="deadbeef",
+        )
+        custom_session._closed = True
+        self.mock_request.return_value = _fake_native_response()
+
+        custom_session.get("https://example.com/")
+
+        sent_payload = json.loads(self.mock_request.call_args[0][0].decode("utf-8"))
+        custom_tls_client = sent_payload["customTlsClient"]
+        self.assertEqual(custom_tls_client["alpnProtocols"], ["h2", "http/1.1"])
+        self.assertEqual(custom_tls_client["alpsProtocols"], ["h2"])
+        self.assertEqual(custom_tls_client["trustAnchorsPayload"], "deadbeef")
+        custom_session.close()
+
 
 class TestExecuteRequestErrors(_PatchedCffiTestCase):
 
