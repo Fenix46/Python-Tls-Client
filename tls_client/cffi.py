@@ -17,7 +17,19 @@ else:
         file_ext = '-x86.so'
 
 root_dir = os.path.abspath(os.path.dirname(__file__))
-library = ctypes.cdll.LoadLibrary(f'{root_dir}/dependencies/tls-client{file_ext}')
+library_path = f'{root_dir}/dependencies/tls-client{file_ext}'
+
+try:
+    library = ctypes.cdll.LoadLibrary(library_path)
+except OSError as exc:
+    raise OSError(
+        f"Failed to load the native tls-client library for this platform "
+        f"(platform={platform!r}, machine={machine()!r}) from {library_path!r}. "
+        "The binary may be missing from the package, incompatible with this "
+        "OS/architecture, or blocked by the OS (e.g. macOS Gatekeeper). "
+        "If you believe this platform should be supported, please open an "
+        "issue at https://github.com/Fenix46/Python-Tls-Client/issues."
+    ) from exc
 
 # extract the exposed request function from the shared package
 request = library.request
