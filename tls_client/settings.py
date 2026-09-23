@@ -1,5 +1,12 @@
 from typing_extensions import Literal, TypeAlias
 
+# Keep this list in sync with the `MappedTLSClients` map in
+# bogdanfinn/tls-client's profiles/profiles.go for the version of the
+# native binaries shipped in tls_client/dependencies/ (currently v1.16.0).
+# Passing a string that isn't in that map fails at the native layer, not
+# here, so an outdated list here just breaks autocomplete/typing, not
+# runtime behavior. Source:
+# https://github.com/bogdanfinn/tls-client/blob/v1.16.0/profiles/profiles.go
 ClientIdentifiers: TypeAlias = Literal[
     # Chrome
     "chrome_103",
@@ -16,6 +23,23 @@ ClientIdentifiers: TypeAlias = Literal[
     "chrome_116_PSK_PQ",
     "chrome_117",
     "chrome_120",
+    "chrome_124",
+    "chrome_130_PSK",
+    "chrome_131",
+    "chrome_131_PSK",
+    "chrome_133",
+    "chrome_133_PSK",
+    "chrome_144",
+    "chrome_144_PSK",
+    "chrome_146",
+    "chrome_146_PSK",
+    "chrome_150",
+    "chrome_150_PSK",
+    "chrome_152",
+    "chrome_152_PSK",
+    # Brave
+    "brave_146",
+    "brave_146_PSK",
     # Safari
     "safari_15_6_1",
     "safari_16_0",
@@ -23,8 +47,12 @@ ClientIdentifiers: TypeAlias = Literal[
     "safari_ios_15_5",
     "safari_ios_15_6",
     "safari_ios_16_0",
+    "safari_ios_17_0",
+    "safari_ios_18_0",
+    "safari_ios_18_5",
+    "safari_ios_26_0",
     # iPadOS (Safari)
-    "safari_ios_15_6",
+    "safari_ipad_15_6",
     # FireFox
     "firefox_102",
     "firefox_104",
@@ -34,6 +62,14 @@ ClientIdentifiers: TypeAlias = Literal[
     "firefox_110",
     "firefox_117",
     "firefox_120",
+    "firefox_123",
+    "firefox_132",
+    "firefox_133",
+    "firefox_135",
+    "firefox_146_PSK",
+    "firefox_147",
+    "firefox_147_PSK",
+    "firefox_148",
     # Opera
     "opera_89",
     "opera_90",
@@ -51,14 +87,17 @@ ClientIdentifiers: TypeAlias = Literal[
     "zalando_android_mobile",
     "nike_ios_mobile",
     "nike_android_mobile",
+    "cloudscraper",
     "mms_ios",
+    "mms_ios_1",
     "mms_ios_2",
     "mms_ios_3",
     "mesh_ios",
+    "mesh_ios_1",
     "mesh_ios_2",
     "mesh_android",
+    "mesh_android_1",
     "mesh_android_2",
     "confirmed_ios",
     "confirmed_android",
-    "confirmed_android_2",
 ]
