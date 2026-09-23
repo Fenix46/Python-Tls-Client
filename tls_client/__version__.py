@@ -6,6 +6,6 @@
 
 __title__ = "tls_client"
 __description__ = "Advanced Python HTTP Client (fork with binary-response fix and certificate pinning)."
-__version__ = "1.0.3"
+__version__ = "1.1.0"
 __author__ = "Emanuele Scarlata"
 __license__ = "MIT"
