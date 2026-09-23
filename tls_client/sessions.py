@@ -40,6 +40,7 @@ class Session:
         certificate_pinning: Optional[Dict[str, List[str]]] = None,
     ) -> None:
         self._session_id = str(uuid.uuid4())
+        self._closed = False
         # --- Standard Settings ----------------------------------------------------------------------------------------
 
         # Case-insensitive dictionary of headers, send on each request
@@ -298,8 +299,31 @@ class Session:
         destroy_session_response_object = loads(destroy_session_response_string)
 
         freeMemory(destroy_session_response_object['id'].encode('utf-8'))
+        self._closed = True
 
         return destroy_session_response_string
+
+    def __del__(self):
+        # Safety net for callers who forget to call close() or use the `with`
+        # statement: the Go backend keeps the session (and its connection
+        # pool) alive until destroySession() is called, so a forgotten
+        # session leaks native memory for the life of the process.
+        if not getattr(self, "_closed", True):
+            import warnings
+            warnings.warn(
+                f"Session {self._session_id} was never closed; call session.close() "
+                "or use it as a context manager (`with tls_client.Session() as session`) "
+                "to release the native TLS client resources.",
+                ResourceWarning,
+                stacklevel=2,
+            )
+            try:
+                self.close()
+            except Exception:
+                # Best-effort cleanup during garbage collection / interpreter
+                # shutdown; the native library or event loop it depends on
+                # may already be gone.
+                pass
 
     def execute_request(
         self,
