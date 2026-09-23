@@ -14,7 +14,7 @@ by [requests](https://github.com/psf/requests).
 > Changes on top of the original:
 > - Fixed corruption of binary response bodies (protobuf, images, ...) — see [Changelog](#changelog) 1.0.2 / 1.0.3
 > - Certificate pinning — see [Changelog](#changelog) 1.0.1
-> - Typed exceptions, safer session lifecycle, clearer native-library load errors — see [Changelog](#changelog) 1.1.0
+> - Typed exceptions, safer session lifecycle, clearer native-library load errors — see [Changelog](#changelog) (Unreleased)
 
 ## Installation
 
@@ -220,7 +220,7 @@ wrapper this project is forked from. The syntax stays close to
 
 ## Changelog
 
-### 1.1.0
+### Unreleased
 - **Added**: typed exception hierarchy (`TLSClientTimeoutError`,
   `TLSClientProxyError`, `TLSClientConnectionError`,
   `TLSClientCertificateError`), all subclasses of the existing
