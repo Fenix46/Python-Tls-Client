@@ -284,7 +284,10 @@ wrapper this project is forked from. The syntax stays close to
   profile was `chrome_120`/`firefox_120` (obsolete browser versions by
   2026, which made the fingerprint itself a distinguishing signal). Now
   includes Chrome 150/152, Firefox 147/148, Brave 146, and 20+ other new
-  profiles — see the [client identifier table](#quick-start) above.
+  profiles — see the [client identifier table](#quick-start) above. Verified
+  against a live handshake (`chrome_150` against tls.peet.ws) and against
+  the full existing test suite (unit tests + the httpbin-backed binary
+  response regression suite) on macOS arm64.
 - **Added**: `Session` parameters `alpn_protocols`, `alps_protocols`,
   `trust_anchors_payload` (custom client only), `disable_session_tickets`,
   `disable_http3`, exposing v1.16.0 request fields. All default to the
