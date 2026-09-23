@@ -14,8 +14,8 @@ by [requests](https://github.com/psf/requests).
 > Changes on top of the original:
 > - Fixed corruption of binary response bodies (protobuf, images, ...) — see [Changelog](#changelog) 1.0.2 / 1.0.3
 > - Certificate pinning — see [Changelog](#changelog) 1.0.1
-> - Typed exceptions, safer session lifecycle, clearer native-library load errors — see [Changelog](#changelog) (Unreleased)
-> - Native binaries updated to `bogdanfinn/tls-client` v1.16.0 (Chrome 150/152, Firefox 147/148, Brave 146, HTTP/3 over SOCKS5, session ticket control, ...) — see [Changelog](#changelog) (Unreleased)
+> - Typed exceptions, safer session lifecycle, clearer native-library load errors — see [Changelog](#changelog) 1.0.4
+> - Native binaries updated to `bogdanfinn/tls-client` v1.16.0, fixing a musl/glibc mismatch on Linux (Chrome 150/152, Firefox 147/148, Brave 146, HTTP/3 over SOCKS5, session ticket control, ...) — see [Changelog](#changelog) 1.0.4
 
 ## Installation
 
@@ -259,7 +259,7 @@ wrapper this project is forked from. The syntax stays close to
 
 ## Changelog
 
-### Unreleased
+### 1.0.4
 - **Fixed**: the Linux `.so` binaries published in `1.0.3` on PyPI
   (`tls-client-amd64.so`, and likely the other Linux binaries from that
   build) were linked against musl libc instead of glibc, causing
