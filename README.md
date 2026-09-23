@@ -260,6 +260,14 @@ wrapper this project is forked from. The syntax stays close to
 ## Changelog
 
 ### Unreleased
+- **Fixed**: the Linux `.so` binaries published in `1.0.3` on PyPI
+  (`tls-client-amd64.so`, and likely the other Linux binaries from that
+  build) were linked against musl libc instead of glibc, causing
+  `OSError: ... libc.musl-x86_64.so.1` on any glibc-based distro (Ubuntu,
+  Debian, most standard LXC containers — anything that isn't Alpine).
+  The v1.16.0 binaries in this update were downloaded from upstream's
+  `*-ubuntu-*` release assets and confirmed glibc-linked (checked for
+  `GLIBC_*` version symbols and the absence of a `libc.musl` dependency).
 - **Breaking**: `Session`'s default `client_identifier` changed from
   `chrome_120` to `chrome_150` (matching the v1.16.0 native library's own
   default profile). `chrome_120` imitates a browser version no longer in
