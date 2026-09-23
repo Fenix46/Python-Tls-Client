@@ -38,6 +38,11 @@ class Session:
         catch_panics: bool = False,
         debug: bool = False,
         certificate_pinning: Optional[Dict[str, List[str]]] = None,
+        alpn_protocols: Optional[List[str]] = None,
+        alps_protocols: Optional[List[str]] = None,
+        trust_anchors_payload: Optional[str] = None,
+        disable_session_tickets: bool = False,
+        disable_http3: bool = False,
     ) -> None:
         self._session_id = str(uuid.uuid4())
         self._closed = False
@@ -279,6 +284,24 @@ class Session:
         # debugging
         self.debug = debug
 
+        # ALPN protocols offered during the TLS handshake for a custom client
+        # Example: ["h2", "http/1.1"]
+        self.alpn_protocols = alpn_protocols
+
+        # ALPS protocols (Application-Layer Protocol Settings) for a custom client
+        self.alps_protocols = alps_protocols
+
+        # Trust anchors payload for the TLS 1.3 "trust_anchors" extension.
+        # Required when ja3_string lists extension 51764; pass "" (default
+        # None here) to keep the previous behaviour.
+        self.trust_anchors_payload = trust_anchors_payload
+
+        # Disable TLS session ticket caching and resumption
+        self.disable_session_tickets = disable_session_tickets
+
+        # Disable HTTP/3, even for profiles that would otherwise use it
+        self.disable_http3 = disable_http3
+
     def __enter__(self):
         return self
 
@@ -433,6 +456,8 @@ class Session:
             "requestBody": base64.b64encode(request_body).decode() if is_byte_request else request_body,
             "requestCookies": request_cookies,
             "timeoutSeconds": timeout_seconds,
+            "disableSessionTickets": self.disable_session_tickets,
+            "disableHttp3": self.disable_http3,
         }
         if certificate_pinning:
             request_payload["certificatePinningHosts"] = certificate_pinning
@@ -445,11 +470,17 @@ class Session:
                 "connectionFlow": self.connection_flow,
                 "priorityFrames": self.priority_frames,
                 "headerPriority": self.header_priority,
-                "certCompressionAlgo": self.cert_compression_algo,
+                # certCompressionAlgos (plural) takes a list as of tls-client
+                # v1.16.0's CustomTlsClient schema; wrap the single algorithm
+                # this wrapper still accepts as a one-element list.
+                "certCompressionAlgos": [self.cert_compression_algo] if self.cert_compression_algo else None,
                 "supportedVersions": self.supported_versions,
                 "supportedSignatureAlgorithms": self.supported_signature_algorithms,
                 "supportedDelegatedCredentialsAlgorithms": self.supported_delegated_credentials_algorithms ,
                 "keyShareCurves": self.key_share_curves,
+                "alpnProtocols": self.alpn_protocols,
+                "alpsProtocols": self.alps_protocols,
+                "trustAnchorsPayload": self.trust_anchors_payload,
             }
         else:
             request_payload["tlsClientIdentifier"] = self.client_identifier
