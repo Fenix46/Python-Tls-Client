@@ -13,3 +13,10 @@
 # requests: https://github.com/psf/requests
 
 from .sessions import Session
+from .exceptions import (
+    TLSClientExeption,
+    TLSClientTimeoutError,
+    TLSClientProxyError,
+    TLSClientConnectionError,
+    TLSClientCertificateError,
+)
