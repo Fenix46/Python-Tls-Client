@@ -13,8 +13,14 @@ else:
         file_ext = '-arm64.so'
     elif machine() in ("x86_64", "amd64", "AMD64"):
         file_ext = '-amd64.so'
-    else:
+    elif machine() in ("i386", "i686", "x86"):
         file_ext = '-x86.so'
+    else:
+        raise OSError(
+            f"No native tls-client library is bundled for Linux machine={machine()!r}. "
+            "Supported: x86_64, aarch64, i386/i686. Please open an issue at "
+            "https://github.com/Fenix46/Python-Tls-Client/issues."
+        )
 
 root_dir = os.path.abspath(os.path.dirname(__file__))
 library_path = f'{root_dir}/dependencies/tls-client{file_ext}'
