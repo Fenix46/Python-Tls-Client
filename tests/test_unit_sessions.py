@@ -251,6 +251,27 @@ class TestRequestIsolation(_PatchedCffiTestCase):
         self.assertEqual(self._sent()["headers"]["content-type"], "application/vnd.api+json")
 
 
+    def test_per_request_cookies_do_not_persist_in_session(self):
+        self.mock_request.return_value = _fake_native_response()
+
+        self.session.get("https://example.com/", cookies={"tmp": "1"})
+        self.assertEqual([c["name"] for c in self._sent()["requestCookies"]], ["tmp"])
+        self.assertNotIn("tmp", self.session.cookies)
+
+        self.session.get("https://example.com/")
+        self.assertEqual(self._sent()["requestCookies"], [])
+
+    def test_response_set_cookies_persist_in_session(self):
+        self.mock_request.return_value = _fake_native_response(
+            headers={"Set-Cookie": ["sid=abc; Path=/"]}
+        )
+
+        response = self.session.get("https://example.com/")
+
+        self.assertEqual(response.cookies.get("sid"), "abc")
+        self.assertEqual(self.session.cookies.get("sid"), "abc")
+
+
 class TestSessionLifecycle(_PatchedCffiTestCase):
 
     def test_close_marks_session_closed_and_frees_memory(self):

@@ -399,9 +399,8 @@ class Session:
         headers = merged_headers
 
         # --- Cookies --------------------------------------------------------------------------------------------------
-        cookies = cookies or {}
-        # Merge with session cookies
-        cookies = merge_cookies(self.cookies, cookies)
+        # Merge with session cookies, on a copy so per-request cookies don't stick to the session
+        cookies = merge_cookies(self.cookies.copy(), cookies or {})
         # turn cookie jar into dict
         # in the cookie value the " gets removed, because the fhttp library in golang doesn't accept the character
         request_cookies = [
@@ -501,7 +500,7 @@ class Session:
         response_cookie_jar = extract_cookies_to_jar(
             request_url=url,
             request_headers=headers,
-            cookie_jar=cookies,
+            cookie_jar=self.cookies,
             response_headers=response_object["headers"]
         )
         # build response class
