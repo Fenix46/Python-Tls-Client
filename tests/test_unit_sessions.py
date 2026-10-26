@@ -208,6 +208,29 @@ class TestExecuteRequestErrors(_PatchedCffiTestCase):
         with self.assertRaises(TLSClientCertificateError):
             self.session.get("https://example.com/")
 
+    def test_bad_ssl_pin_message_raises_certificate_error(self):
+        self._fail_with("bad ssl pin detected for example.com")
+        with self.assertRaises(TLSClientCertificateError):
+            self.session.get("https://example.com/")
+
+    def test_x509_verification_failure_is_a_connection_error(self):
+        self._fail_with("x509: certificate signed by unknown authority")
+        with self.assertRaises(TLSClientConnectionError) as ctx:
+            self.session.get("https://example.com/")
+        self.assertNotIsInstance(ctx.exception, TLSClientCertificateError)
+
+    def test_pin_and_eof_only_match_as_whole_words(self):
+        for message in ("shipping label rejected", "geofence violation"):
+            self._fail_with(message)
+            with self.assertRaises(TLSClientExeption) as ctx:
+                self.session.get("https://example.com/")
+            self.assertIs(type(ctx.exception), TLSClientExeption)
+
+    def test_unexpected_eof_is_a_connection_error(self):
+        self._fail_with("unexpected EOF")
+        with self.assertRaises(TLSClientConnectionError):
+            self.session.get("https://example.com/")
+
     def test_unknown_message_raises_base_exception(self):
         self._fail_with("something completely unexpected happened")
         with self.assertRaises(TLSClientExeption):

@@ -1,4 +1,7 @@
 
+import re
+
+
 class TLSClientExeption(IOError):
     """General error with the TLS client"""
 
@@ -19,22 +22,25 @@ class TLSClientCertificateError(TLSClientExeption):
     """The server certificate did not match the configured certificate pin."""
 
 
-# Substrings looked up (case-insensitively) in the Go backend's error message
+# Regexes searched (case-insensitively) in the Go backend's error message
 # to classify it into one of the typed exceptions above. The backend
 # (bogdanfinn/tls-client) does not expose a structured error code, only this
 # free-text message, so this is best-effort pattern matching kept close to
 # the strings the Go client is known to emit.
 _ERROR_PATTERNS = (
-    ("certificate", TLSClientCertificateError),
-    ("pin", TLSClientCertificateError),
-    ("proxy", TLSClientProxyError),
-    ("timeout", TLSClientTimeoutError),
-    ("deadline exceeded", TLSClientTimeoutError),
-    ("no such host", TLSClientConnectionError),
-    ("connection refused", TLSClientConnectionError),
-    ("connection reset", TLSClientConnectionError),
-    ("dial tcp", TLSClientConnectionError),
-    ("eof", TLSClientConnectionError),
+    # Chain verification failures (x509: ... unknown authority, expired, ...)
+    # are TLS handshake failures, not pin mismatches, so they come first.
+    (r"x509", TLSClientConnectionError),
+    (r"certificate", TLSClientCertificateError),
+    (r"\bpin(ned|ning)?\b", TLSClientCertificateError),
+    (r"proxy", TLSClientProxyError),
+    (r"timeout", TLSClientTimeoutError),
+    (r"deadline exceeded", TLSClientTimeoutError),
+    (r"no such host", TLSClientConnectionError),
+    (r"connection refused", TLSClientConnectionError),
+    (r"connection reset", TLSClientConnectionError),
+    (r"dial tcp", TLSClientConnectionError),
+    (r"\beof\b", TLSClientConnectionError),
 )
 
 
@@ -46,6 +52,6 @@ def build_exception(message: str) -> TLSClientExeption:
     """
     lowered = (message or "").lower()
     for pattern, exception_cls in _ERROR_PATTERNS:
-        if pattern in lowered:
+        if re.search(pattern, lowered):
             return exception_cls(message)
     return TLSClientExeption(message)
