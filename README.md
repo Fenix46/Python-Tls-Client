@@ -285,7 +285,7 @@ wrapper this project is forked from. The syntax stays close to
 
 ## Changelog
 
-### Unreleased
+### 1.0.5
 - **Fixed**: `post(json=...)` no longer leaves `Content-Type: application/json`
   in `session.headers`; previously every later request on the session
   (GETs, form posts) carried it. Headers are merged per request.
