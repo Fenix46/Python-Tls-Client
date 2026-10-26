@@ -6,6 +6,14 @@ class TLSClientExeption(IOError):
     """General error with the TLS client"""
 
 
+class TLSClientHTTPError(TLSClientExeption):
+    """Raised by ``Response.raise_for_status()`` for 4xx/5xx responses."""
+
+    def __init__(self, message, response=None):
+        super().__init__(message)
+        self.response = response
+
+
 class TLSClientTimeoutError(TLSClientExeption):
     """The request did not complete within ``timeout_seconds``."""
 

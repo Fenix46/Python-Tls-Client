@@ -19,4 +19,5 @@ from .exceptions import (
     TLSClientProxyError,
     TLSClientConnectionError,
     TLSClientCertificateError,
+    TLSClientHTTPError,
 )

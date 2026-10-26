@@ -1,4 +1,5 @@
 from .cookies import cookiejar_from_dict, RequestsCookieJar
+from .exceptions import TLSClientHTTPError
 from .structures import CaseInsensitiveDict
 
 from typing import Union
@@ -36,6 +37,19 @@ class Response:
 
     def __repr__(self):
         return f"<Response [{self.status_code}]>"
+
+    @property
+    def ok(self):
+        """True if the status code is below 400."""
+        return self.status_code < 400
+
+    def raise_for_status(self):
+        """Raise TLSClientHTTPError for 4xx/5xx responses."""
+        if not self.ok:
+            kind = "Client" if self.status_code < 500 else "Server"
+            raise TLSClientHTTPError(
+                f"{self.status_code} {kind} Error for url: {self.url}", response=self
+            )
 
     def json(self, **kwargs):
         """parse response body to json (dict/list)"""

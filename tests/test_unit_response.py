@@ -1,6 +1,7 @@
 """Unit tests for Response / build_response: no network, no native library involved."""
 import unittest
 
+from tls_client.exceptions import TLSClientExeption, TLSClientHTTPError
 from tls_client.cookies import cookiejar_from_dict
 from tls_client.response import Response, build_response
 
@@ -31,6 +32,28 @@ class TestResponseBody(unittest.TestCase):
 
     def test_empty_response_has_empty_content(self):
         self.assertEqual(Response().content, b"")
+
+
+class TestResponseStatus(unittest.TestCase):
+
+    def test_ok_is_true_below_400(self):
+        self.assertTrue(_build(status=200).ok)
+        self.assertTrue(_build(status=302).ok)
+        self.assertFalse(_build(status=404).ok)
+
+    def test_raise_for_status_passes_on_success(self):
+        _build(status=204).raise_for_status()
+
+    def test_raise_for_status_raises_with_response_attached(self):
+        response = _build(status=503)
+        with self.assertRaises(TLSClientHTTPError) as ctx:
+            response.raise_for_status()
+        self.assertIs(ctx.exception.response, response)
+        self.assertIn("503 Server Error", str(ctx.exception))
+
+    def test_http_error_is_catchable_as_base_exception(self):
+        with self.assertRaises(TLSClientExeption):
+            _build(status=404).raise_for_status()
 
 
 class TestResponseContextManager(unittest.TestCase):
