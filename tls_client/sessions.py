@@ -309,6 +309,9 @@ class Session:
         self.close()
 
     def close(self) -> str:
+        if self._closed:
+            return ""
+
         destroy_session_payload = {
             "sessionId": self._session_id
         }
@@ -364,8 +367,14 @@ class Session:
     ) -> Response:
         # --- URL ------------------------------------------------------------------------------------------------------
         # Prepare URL - add params to url
-        if params is not None:
-            url = f"{url}?{urllib.parse.urlencode(params, doseq=True)}"
+        # Session params are sent on each request; per-request params win on conflict.
+        merged_params = {**self.params, **(params or {})}
+        if merged_params:
+            parts = urllib.parse.urlsplit(url)
+            query = urllib.parse.urlencode(merged_params, doseq=True)
+            if parts.query:
+                query = f"{parts.query}&{query}"
+            url = urllib.parse.urlunsplit(parts._replace(query=query))
 
         # --- Request Body ---------------------------------------------------------------------------------------------
         # Prepare request body - build request body
@@ -411,8 +420,8 @@ class Session:
         # --- Proxy ----------------------------------------------------------------------------------------------------
         proxy = proxy or self.proxies
         
-        if type(proxy) is dict and "http" in proxy:
-            proxy = proxy["http"]
+        if type(proxy) is dict and ("http" in proxy or "https" in proxy):
+            proxy = proxy.get("http") or proxy["https"]
         elif type(proxy) is str:
             proxy = proxy
         else:

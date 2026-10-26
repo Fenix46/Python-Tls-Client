@@ -251,6 +251,35 @@ class TestRequestIsolation(_PatchedCffiTestCase):
         self.assertEqual(self._sent()["headers"]["content-type"], "application/vnd.api+json")
 
 
+    def test_params_are_merged_with_existing_query_string(self):
+        self.mock_request.return_value = _fake_native_response()
+
+        self.session.get("https://example.com/s?a=1#top", params={"b": "2"})
+
+        self.assertEqual(self._sent()["requestUrl"], "https://example.com/s?a=1&b=2#top")
+
+    def test_session_params_are_sent_and_overridden_per_request(self):
+        self.mock_request.return_value = _fake_native_response()
+        self.session.params = {"k": "session", "x": "1"}
+
+        self.session.get("https://example.com/", params={"k": "request"})
+
+        self.assertEqual(self._sent()["requestUrl"], "https://example.com/?k=request&x=1")
+
+    def test_empty_params_leave_url_untouched(self):
+        self.mock_request.return_value = _fake_native_response()
+
+        self.session.get("https://example.com/path", params={})
+
+        self.assertEqual(self._sent()["requestUrl"], "https://example.com/path")
+
+    def test_proxy_dict_with_only_https_key_is_used(self):
+        self.mock_request.return_value = _fake_native_response()
+
+        self.session.get("https://example.com/", proxy={"https": "http://proxy:8080"})
+
+        self.assertEqual(self._sent()["proxyUrl"], "http://proxy:8080")
+
     def test_per_request_cookies_do_not_persist_in_session(self):
         self.mock_request.return_value = _fake_native_response()
 
@@ -281,6 +310,13 @@ class TestSessionLifecycle(_PatchedCffiTestCase):
         self.assertTrue(self.session._closed)
         self.mock_destroy_session.assert_called_once()
         self.mock_free_memory.assert_called_once()
+
+    def test_close_twice_only_destroys_native_session_once(self):
+        self.session._closed = False
+        self.session.close()
+        self.session.close()
+
+        self.mock_destroy_session.assert_called_once()
 
     def test_context_manager_closes_session_on_exit(self):
         self.session._closed = False
