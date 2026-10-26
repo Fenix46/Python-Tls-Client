@@ -85,6 +85,32 @@ If you forget, the session emits a `ResourceWarning` and does a best-effort
 cleanup when it is garbage collected — but that isn't guaranteed to run
 promptly (or at all), so don't rely on it in production code.
 
+## Async usage
+
+`AsyncSession` takes the same arguments as `Session`, but every request
+method is awaitable. Requests run in the default thread pool, so
+`asyncio.gather` over one session runs them in parallel:
+
+```python
+import asyncio
+import tls_client
+
+async def main():
+    async with tls_client.AsyncSession(client_identifier="chrome_150") as session:
+        responses = await asyncio.gather(
+            session.get("https://www.example.com/"),
+            session.get("https://www.example.org/"),
+        )
+        for response in responses:
+            response.raise_for_status()
+
+asyncio.run(main())
+```
+
+`Response` also has `.ok` (status below 400) and `.raise_for_status()`, which
+raises `TLSClientHTTPError` (a `TLSClientExeption` subclass carrying
+`.response`) for 4xx/5xx.
+
 ## Custom TLS fingerprint
 
 Instead of a `client_identifier` preset, you can fully customize the TLS/HTTP2
@@ -258,6 +284,30 @@ wrapper this project is forked from. The syntax stays close to
 [requests](https://github.com/psf/requests) since most people already know it.
 
 ## Changelog
+
+### Unreleased
+- **Fixed**: `post(json=...)` no longer leaves `Content-Type: application/json`
+  in `session.headers`; previously every later request on the session
+  (GETs, form posts) carried it. Headers are merged per request.
+  If you relied on that leak, set the header on `session.headers` yourself.
+- **Fixed**: cookies passed to a single request (`cookies={...}`) are no
+  longer stored in the session cookie jar.
+- **Fixed**: `response.headers` is now case-insensitive (it was a plain
+  `dict`, so `r.headers["content-type"]` raised `KeyError`), and
+  `with response:` works.
+- **Fixed**: `params` merge into a query string already present in the URL
+  instead of producing `?a=1?b=2`, and `session.params` is now actually sent.
+- **Fixed**: a proxy dict with only an `"https"` key is used instead of being
+  silently ignored; `close()` is idempotent.
+- **Changed**: certificate-chain failures (`x509: ...`) now raise
+  `TLSClientConnectionError` instead of `TLSClientCertificateError`, which is
+  reserved for certificate pinning failures. Also, `pin`/`eof` no longer
+  match inside unrelated words.
+- **Changed**: unsupported Linux architectures raise a clear `OSError` instead
+  of falling back to the 32-bit x86 binary.
+- **Added**: `AsyncSession`, `Response.ok`, `Response.raise_for_status()`,
+  `TLSClientHTTPError`.
+- **CI**: unit tests also run on macOS and Windows.
 
 ### 1.0.4
 - **Fixed**: the Linux `.so` binaries published in `1.0.3` on PyPI
