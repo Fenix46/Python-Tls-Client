@@ -13,6 +13,7 @@
 # requests: https://github.com/psf/requests
 
 from .sessions import Session
+from .async_session import AsyncSession
 from .exceptions import (
     TLSClientExeption,
     TLSClientTimeoutError,
