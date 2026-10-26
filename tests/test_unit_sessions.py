@@ -219,6 +219,38 @@ class TestExecuteRequestErrors(_PatchedCffiTestCase):
             self.session.get("https://example.com/")
 
 
+class TestRequestIsolation(_PatchedCffiTestCase):
+    """A single call must not leak state into the session or later calls."""
+
+    def _sent(self):
+        return json.loads(self.mock_request.call_args[0][0].decode("utf-8"))
+
+    def test_json_content_type_does_not_leak_into_session_headers(self):
+        self.mock_request.return_value = _fake_native_response()
+
+        self.session.post("https://example.com/", json={"a": 1})
+        self.assertEqual(self._sent()["headers"]["Content-Type"], "application/json")
+        self.assertNotIn("content-type", self.session.headers)
+
+        self.session.get("https://example.com/")
+        self.assertNotIn("content-type", {k.lower() for k in self._sent()["headers"]})
+
+    def test_form_post_after_json_post_is_urlencoded(self):
+        self.mock_request.return_value = _fake_native_response()
+
+        self.session.post("https://example.com/", json={"a": 1})
+        self.session.post("https://example.com/", data={"b": "2"})
+
+        self.assertEqual(self._sent()["headers"]["Content-Type"], "application/x-www-form-urlencoded")
+
+    def test_explicit_content_type_header_is_respected(self):
+        self.mock_request.return_value = _fake_native_response()
+
+        self.session.post("https://example.com/", json={"a": 1}, headers={"content-type": "application/vnd.api+json"})
+
+        self.assertEqual(self._sent()["headers"]["content-type"], "application/vnd.api+json")
+
+
 class TestSessionLifecycle(_PatchedCffiTestCase):
 
     def test_close_marks_session_closed_and_frees_memory(self):

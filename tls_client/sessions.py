@@ -381,25 +381,22 @@ class Session:
         else:
             request_body = data
             content_type = None
-        # set content type if it isn't set
-        if content_type is not None and "content-type" not in self.headers:
-            self.headers["Content-Type"] = content_type
 
         # --- Headers --------------------------------------------------------------------------------------------------
-        if self.headers is None:
-            headers = CaseInsensitiveDict(headers)
-        elif headers is None:
-            headers = self.headers
-        else:
-            merged_headers = CaseInsensitiveDict(self.headers)
+        # Built per request: session headers must not be mutated by a single call.
+        merged_headers = CaseInsensitiveDict(self.headers)
+        if headers is not None:
             merged_headers.update(headers)
+        # set content type if it isn't set
+        if content_type is not None and "content-type" not in merged_headers:
+            merged_headers["Content-Type"] = content_type
 
-            # Remove items, where the key or value is set to None.
-            none_keys = [k for (k, v) in merged_headers.items() if v is None or k is None]
-            for key in none_keys:
-                del merged_headers[key]
+        # Remove items, where the key or value is set to None.
+        none_keys = [k for (k, v) in merged_headers.items() if v is None or k is None]
+        for key in none_keys:
+            del merged_headers[key]
 
-            headers = merged_headers
+        headers = merged_headers
 
         # --- Cookies --------------------------------------------------------------------------------------------------
         cookies = cookies or {}
