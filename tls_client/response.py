@@ -25,11 +25,14 @@ class Response:
 
         # A CookieJar of Cookies the server sent back.
         self.cookies = cookiejar_from_dict({})
-        
-        self._content = False
+
+        self._content = b""
 
     def __enter__(self):
         return self
+
+    def __exit__(self, *args):
+        pass
 
     def __repr__(self):
         return f"<Response [{self.status_code}]>"
@@ -41,16 +44,6 @@ class Response:
     @property
     def content(self):
         """Content of the response, in bytes."""
-        
-        if self._content is False:
-            if self._content_consumed:
-                raise RuntimeError("The content for this response was already consumed")
-
-            if self.status_code == 0:
-                self._content = None
-            else:
-                self._content = b"".join(self.iter_content(10 * 1024)) or b""
-        self._content_consumed = True
         return self._content
 
 
@@ -78,7 +71,7 @@ def build_response(res: Union[dict, list], res_cookies: RequestsCookieJar) -> Re
     # Add status code
     response.status_code = res["status"]
     # Add headers
-    response_headers = {}
+    response_headers = CaseInsensitiveDict()
     if res["headers"] is not None:
         for header_key, header_value in res["headers"].items():
             if len(header_value) == 1:
